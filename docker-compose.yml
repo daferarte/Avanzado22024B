@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  users_api:
+    build:
+      context: ./APIS
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./APIS/users/:/usr/usersAPI/
+    depends_on:
+      - db
+    networks:
+      - dev_network
+
+  db:
+    image: postgres
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: 12345
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata/users:/var/lib/postgresql/data
+    networks:
+      - dev_network
+
+networks:
+  dev_network:
+    driver: bridge
