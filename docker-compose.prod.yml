@@ -2,6 +2,16 @@ version: "3.8"
 
 services:
 
+  webserver:
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - users_api
+    networks:
+      - prod_network
+
   users_api:
     build:
       context: ./APIS
@@ -14,14 +24,14 @@ services:
         reservations:
           cpus: "0.1"
           memory: 256M
-    ports:
-      - "52000:3000"
+    expose:
+      - "3000-3004:3000"
     volumes:
       - ./APIS/users/:/usr/usersAPI/
     depends_on:
       - db
     networks:
-      - dev_network
+      - prod_network
 
   db:
     image: postgres
@@ -34,28 +44,17 @@ services:
         reservations:
           cpus: "0.1"
           memory: 1GB
-    environment:
-      POSTGRES_PASSWORD: 12345
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
-      - ./pgdata/users:/var/lib/postgresql/data
+      - ./pgdata_prod/users:/var/lib/postgresql/data
+    env_file:
+      - ./.env.prod
     networks:
-      - dev_network
+      - prod_network
   
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: distri_pgadmin
-    ports:
-      - "8888:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: dani@dani.com
-      PGADMIN_DEFAULT_PASSWORD: 12345
-    volumes:
-      - ./pgadmin-data:/var/lib/pgadmin
-    networks:
-      - dev_network
+
 
 networks:
-  dev_network:
+  prod_network:
     driver: bridge
